@@ -4,5 +4,6 @@ import { API } from ".";
 
 // eslint-disable-next-line import/no-anonymous-default-export
 export default {
-  sessionLogin: (tokenId: string) => request(METHODS.GET, API.AUTH.sessionLogin(), { tokenId })(),
+  sessionLogin: (idToken: string) => request(METHODS.POST, API.AUTH.sessionLogin(), { idToken })(),
+  getData: () => request(METHODS.GET, API.DATA.getData())(),
 }

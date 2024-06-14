@@ -10,10 +10,12 @@ export const DEFAULT_AUTH_STATE: AuthState = {
   error: null
 }
 
+
 const reducer = createReducer<typeof DEFAULT_AUTH_STATE, ActionType<typeof actions>>(DEFAULT_AUTH_STATE)
-  .handleAction(actions.getAuthData.success, (state, action) => produce(state, (nextState) => {
-    const authType = action.payload.name as any
+  .handleAction(actions.getAuthData.success, (state, action) => produce(state, (nextState: any) => {
+    const authType = action.payload.name
     nextState[authType] = action.payload.value
   }))
+ 
 
 export default reducer;

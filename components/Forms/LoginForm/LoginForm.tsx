@@ -4,9 +4,10 @@ import { Button, TextField, Typography } from "@mui/material";
 import { useFormik } from "formik";
 import { FC } from "react";
 import loginSchema from "./schema/login.schema";
-import { getAuth, signInWithEmailAndPassword, signOut } from "firebase/auth";
-import { ResponseError } from "@/types/Response.interface";
 import api from "@/api/api";
+import { useRouter } from "next/navigation";
+import { auth } from "@/util";
+import { signInWithEmailAndPassword } from "firebase/auth";
 
 export type LoginFormProps = {
   handleChange: HandleChange;
@@ -15,22 +16,13 @@ export type LoginFormProps = {
 export const LoginForm: FC<LoginFormProps> = ({
   handleChange,
   email,
-  password,
   loading,
+  password,
   error,
 }) => {
-  const handleLogout = async () => {
-    try {
-      const auth = getAuth();
-      const response = await signOut(auth);
-
-      console.log(response);
-    } catch (e) {
-      console.error(e);
-    }
-  };
-
-  const { errors, touched, handleBlur, isValid, handleSubmit, values } =
+  const router = useRouter()
+  
+  const { errors, touched, handleBlur, isValid, handleSubmit } =
     useFormik({
       validationSchema: loginSchema,
       validateOnChange: true,
@@ -40,7 +32,7 @@ export const LoginForm: FC<LoginFormProps> = ({
       onSubmit: async (_) => {
         try {
           handleChange("loading", true);
-          const auth = getAuth();
+          
           const response = await signInWithEmailAndPassword(
             auth,
             email,
@@ -50,9 +42,13 @@ export const LoginForm: FC<LoginFormProps> = ({
           const idToken = await response.user.getIdToken();
 
           if (response?.user) {
-            await api.sessionLogin(idToken);
+            const sessionResponse = await api.sessionLogin(idToken);
 
             handleChange("loading", false);
+       
+            if (sessionResponse.status === 200) {
+              router.push("/");
+            }
           }
 
           console.log(response);
@@ -62,8 +58,6 @@ export const LoginForm: FC<LoginFormProps> = ({
         }
       },
     });
-
-  console.log(values, errors);
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-3">
@@ -99,15 +93,7 @@ export const LoginForm: FC<LoginFormProps> = ({
       >
         Login
       </Button>
-      <Button
-        variant="contained"
-        color="primary"
-        onClick={() => {
-          handleLogout();
-        }}
-      >
-        Logout
-      </Button>
+     
       {error && <Typography color="error">{error.message}</Typography>}
     </form>
   );
